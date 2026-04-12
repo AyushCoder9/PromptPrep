@@ -1,20 +1,35 @@
 ```mermaid
 sequenceDiagram
     participant User
-    participant API as API Gateway
+    participant React as React Frontend
+    participant API as Express API
     participant QS as QuizService
-    participant VDB as VectorDB (Chroma)
-    participant LLM as LLM Service
+    participant VDB as ChromaDB
+    participant LLM as Gemini / Groq LLM
 
-    User->>API: POST /quiz/generate {chapter_id}
-    API->>QS: generaQuiz(chapter_id)
-    rect rgb(200, 220, 240)
-        note over QS, LLM: Generation Phase
-        QS->>VDB: fetchContext(chapter_id)
-        VDB-->>QS: chunks[]
-        QS->>LLM: prompt(chunks, "Generate MCQs")
-        LLM-->>QS: json_response
+    User->>React: Click "Generate Quiz"
+    React->>API: POST /api/quizzes/generate {documentId, difficulty}
+    API->>QS: generateQuiz(documentId, options)
+    
+    rect rgb(40, 40, 80)
+        note over QS, LLM: RAG Generation Phase
+        QS->>VDB: similaritySearch(query, topK=8, documentId)
+        VDB-->>QS: relevantChunks[]
+        QS->>QS: buildPrompt(chunks, difficulty)
+        QS->>LLM: generateContent(prompt)
+        LLM-->>QS: JSON response (MCQs)
+        QS->>QS: parseResponse(raw) → QuizResult
     end
-    QS-->>API: Quiz Object
-    API-->>User: JSON Response (Question List)
+
+    QS->>QS: Store Quiz + Questions in SQLite (Prisma)
+    QS-->>API: {quizId, quiz: QuizResult}
+    API-->>React: JSON Response
+    React-->>User: Display Interactive Quiz UI
+    
+    User->>React: Select answers & Submit
+    React->>API: POST /api/quizzes/:id/submit {answers}
+    API->>QS: submitQuiz(quizId, answers)
+    QS-->>API: {score, percentage, results}
+    API-->>React: Score + Explanations
+    React-->>User: Display Score & Review
 ```

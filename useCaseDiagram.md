@@ -3,16 +3,19 @@ graph TD
     %% Define Actors
     Student((Student))
     Professor((Professor / Admin))
-    AI{AI Service}
+    AI{AI Service - Gemini / Groq}
+    VectorDB[(ChromaDB)]
 
     %% System Boundary
     subgraph PromptPrep_System [PromptPrep System]
         UC1(Upload Material)
         UC2(Generate Quiz)
-        UC3(Export Flashcards)
-        UC4(Query Concept)
-        UC5(View History)
-        UC6(Retrieve Context)
+        UC3(Generate Flashcards)
+        UC4(Chat with Notes)
+        UC5(View Dashboard)
+        UC6(Try Interactive Demo)
+        UC7(Retrieve Context)
+        UC8(Submit Quiz Answers)
     end
 
     %% Student Interactions
@@ -21,17 +24,20 @@ graph TD
     Student --> UC3
     Student --> UC4
     Student --> UC5
+    Student --> UC6
+    Student --> UC8
 
     %% Professor Interactions
     Professor --> UC1
     Professor --> UC5
 
-    %% Includes (represented as dependencies)
-    UC2 -.->|include| UC6
-    UC3 -.->|include| UC6
-    UC4 -.->|include| UC6
+    %% System Dependencies (include relationships)
+    UC2 -.->|include| UC7
+    UC3 -.->|include| UC7
+    UC4 -.->|include| UC7
 
-    %% AI Service Interactions
+    %% External Systems
+    UC7 --- VectorDB
     UC2 --- AI
     UC3 --- AI
     UC4 --- AI

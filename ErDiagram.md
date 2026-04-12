@@ -1,10 +1,12 @@
 ```mermaid
 erDiagram
     User ||--|{ Document : uploads
+    User ||--|{ StudySession : tracks
     User {
         string id PK
-        string username
+        string username UK
         string role
+        datetime createdAt
     }
 
     Document ||--|{ Quiz : generates
@@ -12,30 +14,50 @@ erDiagram
     Document {
         string id PK
         string title
-        string content_hash
-        string file_path
+        string fileName
+        string contentHash
+        string filePath
+        string mimeType
+        int chunkCount
+        datetime uploadedAt
+        string userId FK
     }
 
     Quiz ||--|{ Question : contains
     Quiz {
         string id PK
-        string document_id FK
-        datetime created_at
+        string title
+        string difficulty
         int score
+        int totalMarks
+        datetime createdAt
+        string documentId FK
     }
 
     Question {
         string id PK
-        string quiz_id FK
         string text
-        string correct_answer
-        json options
+        string options
+        string correctAnswer
+        string explanation
+        string quizId FK
     }
 
     Flashcard {
         string id PK
-        string document_id FK
         string term
         string definition
+        datetime createdAt
+        string documentId FK
+    }
+
+    StudySession {
+        string id PK
+        datetime startTime
+        datetime endTime
+        int quizzesCount
+        int flashcardsReviewed
+        int questionsAsked
+        string userId FK
     }
 ```
