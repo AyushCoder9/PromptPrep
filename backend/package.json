@@ -1,0 +1,41 @@
+{
+  "name": "promptprep-backend",
+  "version": "1.0.0",
+  "description": "PromptPrep AI-powered study material generator - Backend",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev --name init",
+    "prisma:push": "prisma db push",
+    "setup": "npm install && npx prisma generate && npx prisma db push"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "@langchain/community": "^0.3.0",
+    "@langchain/core": "^0.3.0",
+    "@langchain/google-genai": "^0.1.0",
+    "@prisma/client": "^5.20.0",
+    "chromadb": "^1.9.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "groq-sdk": "^0.8.0",
+    "multer": "^1.4.5-lts.1",
+    "pdf-parse": "^1.1.1",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.0.0",
+    "@types/pdf-parse": "^1.1.4",
+    "@types/uuid": "^10.0.0",
+    "prisma": "^5.20.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}
