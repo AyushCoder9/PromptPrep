@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+*.db
+*.db-journal
+chromadb-data/
+backend/prisma/*.db
+backend/prisma/*.db-journal
+backend/uploads/
+frontend/dist/
+.DS_Store
+LLM_CONTEXT.md
