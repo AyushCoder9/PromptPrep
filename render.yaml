@@ -1,41 +1,19 @@
 services:
-  # Backend API
+  # Backend API (Stateless, Free Tier Compatible)
   - type: web
     name: promptprep-backend
     env: node
-    plan: starter # Persistence requires a paid plan with a Disk
+    plan: free # Supabase handles the database, so we can use the true free tier!
     rootDir: backend
     buildCommand: npm install && npx prisma generate && npm run build
-    startCommand: npx prisma generate && npx prisma db push && npm start
+    startCommand: npm start
     envVars:
       - key: DATABASE_URL
-        value: file:/var/data/promptprep.db
-      - key: CHROMA_HOST
-        value: http://promptprep-chroma:8000
+        sync: false # Set this manually in Render dashboard to your Supabase pooler URL
+      - key: GEMINI_API_KEY
+        sync: false # Set this manually
       - key: NODE_ENV
         value: production
-    disk:
-      name: promptprep-db
-      mountPath: /var/data
-      sizeGB: 1
-
-  # ChromaDB Vector Store
-  - type: web
-    name: promptprep-chroma
-    env: docker
-    plan: starter
-    dockerContext: .
-    dockerfilePath: Dockerfile.chroma
-    envVars:
-      - key: IS_PERSISTENT
-        value: "TRUE"
-      - key: PERSIST_DIRECTORY
-        value: /index_data
-    disk:
-      name: chroma-index
-      mountPath: /index_data
-      sizeGB: 1
-    healthCheckPath: /api/v1/heartbeat
 
   # Frontend (Static Site)
   - type: static
