@@ -18,8 +18,9 @@ services:
         value: production
 
   # Frontend (Static Site)
-  - type: static_site
+  - type: web
     name: promptprep-frontend
+    runtime: static
     rootDir: frontend
     buildCommand: npm install && npm run build
     publishDir: dist
