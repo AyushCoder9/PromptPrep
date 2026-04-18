@@ -1,6 +1,6 @@
-# PromptPrep | AI-Powered Document Intelligence
+# Prompt Prep | AI-Powered Document Intelligence
 
-![PromptPrep Banner](https://readme-typing-svg.demolab.com?font=Fira+Code&size=45&pause=1000&color=3B82F6&center=true&vCenter=true&width=1000&height=100&lines=PROMPTPREP;AI+STUDY+COMPANION;NEURAL+KNOWLEDGE+EXTRACTION)
+![Prompt Prep Banner](https://readme-typing-svg.demolab.com?font=Fira+Code&size=45&pause=1000&color=3B82F6&center=true&vCenter=true&width=1000&height=100&lines=PROMPT+PREP;AI+STUDY+COMPANION;NEURAL+KNOWLEDGE+EXTRACTION)
 
 <div align="center">
 
@@ -15,9 +15,9 @@
 
 ---
 
-PromptPrep is a sophisticated Full-Stack application designed to transform static educational documents into interactive, conversational learning environments. By leveraging Retrieval-Augmented Generation (RAG) and high-fidelity Large Language Models, it provides deep document analysis, automated assessment generation, and context-grounded intelligence.
+Prompt Prep is a sophisticated Full-Stack application designed to transform static educational documents into interactive, conversational learning environments. By leveraging Retrieval-Augmented Generation (RAG) and high-fidelity Large Language Models, it provides deep document analysis, automated assessment generation, and context-grounded intelligence.
 
-## 🚀 Core Capabilities
+## Core Capabilities
 
 *   **Neural Document Ingestion**: Advanced parsing and semantic chunking of PDFs and text files, optimized for vector indexing.
 *   **Contextual RAG Chat**: A natural language interface strictly grounded in your library—eliminating AI hallucinations.
@@ -25,7 +25,7 @@ PromptPrep is a sophisticated Full-Stack application designed to transform stati
 *   **High-Fidelity Flashcards**: Automatic extraction of atomic concepts (Term/Definition) for high-efficiency memory retention.
 *   **Resilient AI Pipeline**: Dual-engine architecture with automatic fallback between Google Gemini and Groq (LLaMA 3).
 
-## 🏗️ Technical Architecture
+## Technical Architecture
 
 The platform is built on a modular, stateless architecture designed for high throughput and precision retrieval.
 
@@ -52,7 +52,7 @@ graph TD
 
 ---
 
-## 🛠️ Implementation Stack
+## Implementation Stack
 
 | Layer | Technology | Utility |
 | :--- | :--- | :--- |
@@ -65,7 +65,7 @@ graph TD
 
 ---
 
-## 🏁 Quick Start
+## Quick Start
 
 ### 1. Project Initialization
 ```bash
@@ -95,7 +95,7 @@ npm run dev
 
 ---
 
-## 📡 API Specification
+## API Specification
 
 | Endpoint | Method | Description |
 | :--- | :--- | :--- |
