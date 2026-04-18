@@ -30,3 +30,7 @@ services:
           type: web
           name: promptprep-backend
           property: host
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

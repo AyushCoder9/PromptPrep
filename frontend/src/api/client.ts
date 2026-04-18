@@ -1,4 +1,9 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
+let API_BASE = "http://localhost:3001/api";
+const rawEnvUrl = import.meta.env.VITE_API_BASE_URL;
+if (rawEnvUrl) {
+  API_BASE = rawEnvUrl.startsWith("http") ? rawEnvUrl : `https://${rawEnvUrl}`;
+  if (!API_BASE.endsWith("/api")) API_BASE += "/api";
+}
 
 export interface ApiResponse<T> {
   data?: T;
