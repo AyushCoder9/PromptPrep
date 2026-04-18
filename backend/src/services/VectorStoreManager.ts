@@ -109,7 +109,7 @@ export class VectorStoreManager {
     // Use batchEmbedContents to reduce latency from O(N) to O(1)
     const result = await model.batchEmbedContents({
       requests: texts.map((t) => ({
-        content: { parts: [{ text: t }] },
+        content: { role: "user", parts: [{ text: t }] },
       })),
     });
 
