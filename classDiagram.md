@@ -80,8 +80,7 @@ classDiagram
     %% ===== Singleton: Vector Store =====
     class VectorStoreManager {
         -static instance: VectorStoreManager
-        -client: ChromaClient
-        -collection: Collection
+        -logger: Logger
         -VectorStoreManager()
         +static getInstance(): VectorStoreManager
         +initialize(): Promise~void~

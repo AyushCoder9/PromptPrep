@@ -11,21 +11,21 @@ PromptPrep is a full-stack application that ingests educational documents (PDFs,
 3. **Flashcard Generation** — Auto-generate term/definition flashcards for efficient review.
 
 ## Key Features
-- 📤 **Document Ingestion** — Upload PDFs or text files; automatically parsed, chunked, and indexed.
-- 🔍 **Vector Search** — Semantic similarity search powered by ChromaDB and Google Gemini embeddings.
-- 📝 **Quiz Engine** — AI-generated MCQs with explanations and scoring.
-- 🎴 **Flashcard API** — Auto-generated term/definition flash cards.
-- 💬 **RAG Chat** — Ask questions and get answers grounded in your documents.
-- 🎯 **Interactive Demo** — Try the full workflow without uploading a real document.
-- 🔄 **LLM Fallback System** — Supports Gemini and Groq API keys with automatic failover.
+- **Document Ingestion** — Upload PDFs or text files; automatically parsed, chunked, and indexed.
+- **Vector Search** — Semantic similarity search powered by Supabase pgvector and Google Gemini embeddings.
+- **Quiz Engine** — AI-generated MCQs with explanations and scoring.
+- **Flashcard API** — Auto-generated term/definition flash cards.
+- **RAG Chat** — Ask questions and get answers grounded in your documents.
+- **Interactive Demo** — Try the full workflow without uploading a real document.
+- **LLM Fallback System** — Supports Gemini and Groq API keys with automatic failover.
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
 | **Backend** | TypeScript, Node.js, Express.js |
-| **ORM** | Prisma (SQLite) |
-| **Vector Store** | ChromaDB (Docker) |
+| **ORM** | Prisma (PostgreSQL) |
+| **Database & Vectors** | Supabase (PostgreSQL + pgvector) |
 | **AI/LLM** | Google Gemini API, Groq API (fallback) |
 | **Framework** | LangChain.js-compatible architecture |
 | **Frontend** | React, Vite, TypeScript |
@@ -42,10 +42,10 @@ PromptPrep is a full-stack application that ingests educational documents (PDFs,
 | **Repository** | `BaseRepository<T>` → concrete repos |
 
 ## Architecture
-```
-Controllers → Services → Repositories → Database (Prisma/SQLite)
+```text
+Controllers → Services → Repositories → Database (Supabase PostgreSQL)
+                ↓                                ↓
+        VectorStoreManager        →      pgvector (Similarity Search)
                 ↓
-          VectorStoreManager (ChromaDB)
-                ↓
-          LLM (Gemini / Groq fallback)
+          LLM (Gemini / Groq)
 ```

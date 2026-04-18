@@ -4,7 +4,7 @@ graph TD
     Student((Student))
     Professor((Professor / Admin))
     AI{AI Service - Gemini / Groq}
-    VectorDB[(ChromaDB)]
+    VectorDB[(Supabase pgvector)]
 
     %% System Boundary
     subgraph PromptPrep_System [PromptPrep System]

@@ -11,6 +11,7 @@ erDiagram
 
     Document ||--|{ Quiz : generates
     Document ||--|{ Flashcard : generates
+    Document ||--|{ DocumentChunk : contains
     Document {
         string id PK
         string title
@@ -21,6 +22,14 @@ erDiagram
         int chunkCount
         datetime uploadedAt
         string userId FK
+    }
+
+    DocumentChunk {
+        string id PK
+        string content
+        int chunkIndex
+        vector embedding "Unsupported(vector(768))"
+        string documentId FK
     }
 
     Quiz ||--|{ Question : contains

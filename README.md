@@ -1,135 +1,126 @@
-# ⚡ PromptPrep — AI-Powered Study Material Generator
+<div align="center">
+  <h1>PromptPrep</h1>
+  <p><b>An AI-Powered Contextual Study Platform</b></p>
+  <p><i>Intelligent Document Parsing, Semantic Vector Search, and Automated Knowledge Assessment</i></p>
+  <br />
+</div>
 
-> Transform static notes into interactive quizzes, flashcards, and chat-powered study sessions using RAG (Retrieval-Augmented Generation).
+## Project Overview
 
-## 🎯 Features
+PromptPrep is a comprehensive full-stack application designed to transform unstructured educational materials into structured, verifiable learning assets. By employing Retrieval-Augmented Generation (RAG) through advanced Large Language Models, the system seamlessly converts static PDFs and text files into dynamic quizzes, interactive flashcards, and highly contextual chat sessions.
 
-- **📤 Document Ingestion** — Upload PDFs or text files; auto-parsed, chunked, and vector-indexed
-- **📝 Quiz Generation** — AI-generated MCQs with difficulty levels, scoring, and explanations
-- **🎴 Flashcard Engine** — Auto-generated term/definition flashcards with flip animations
-- **💬 RAG Chat** — Chat with your notes; answers grounded in your uploaded documents
-- **🎯 Interactive Demo** — Full walkthrough with sample ML content (no API key needed)
-- **🔄 LLM Fallback System** — Automatic failover between Gemini and Groq APIs
+## Core Capabilities
 
-## 🏗️ Architecture
+- **Document Ingestion Engine**: Automatically parses, semantic-chunks, and indexes unstructured textual data.
+- **Automated Assessment Generation**: Synthesizes multiple-choice questions with dynamic difficulty scaling, performance tracking, and detailed explanations.
+- **Intelligent Flashcards**: Extracts core conceptual pairs (term and definition) for high-efficiency memory retention.
+- **RAG-Powered Chat Interface**: Provides a natural language query interface strictly grounded in the user's uploaded repository.
+- **Resilient AI Subsystem**: Built-in automatic failover architecture spanning Google Gemini and Groq API backends to ensure uninterrupted generation capabilities.
 
+---
+
+## Technical Architecture
+
+The platform follows a decoupled, modular design pattern optimized for stateless cloud deployment.
+
+```mermaid
+graph TD
+    Client[React + Vite Frontend]
+    API[Express.js Node Backend]
+    Router[Express Router]
+    Service[Business Logic Services]
+    Repo[Prisma Repository Layer]
+    DB[(Supabase PostgreSQL)]
+    LLM{Gemini / Groq LLMs}
+
+    Client -->|REST API| API
+    API --> Router
+    Router --> Service
+    Service -->|O/R Mapping| Repo
+    Service -->|Contextual Prompting| LLM
+    Repo -->|Relational Data & pgvector| DB
 ```
-Frontend (React + Vite + TypeScript)
-        ↓ REST API
-Backend (Express.js + TypeScript)
-  ├── Controllers → Services → Repositories
-  ├── Prisma ORM → SQLite
-  ├── ChromaDB → Vector Embeddings
-  └── Gemini / Groq → LLM Generation
-```
 
-### Design Patterns Used
+### Applied Design Patterns
 
-| Pattern | Where | Purpose |
-|---------|-------|---------|
-| **Strategy** | `IDocumentParser` → `PDFParser`, `TextParser` | Interchangeable file parsers |
-| **Factory Method** | `ParserFactory`, `GeneratorFactory` | Centralized object creation |
-| **Template Method** | `BaseContentGenerator` (abstract) | Shared LLM flow, custom prompts |
-| **Singleton** | `VectorStoreManager`, `EnvConfig` | Single DB connection |
-| **Repository** | `BaseRepository<T>` | Decoupled data access |
+*   **Strategy Pattern**: Dynamically selects parsing algorithms (`PDFParser`, `TextParser`) based on MIME types.
+*   **Factory Method**: Centralizes instantiation logic for parsers and AI generators (`ParserFactory`, `GeneratorFactory`).
+*   **Template Method**: Standardizes the LLM pipeline (build prompt, invoke provider, parse response) while allowing subclass specialization (`BaseContentGenerator`).
+*   **Repository Pattern**: Isolates abstract database operations from core business logic (`BaseRepository`).
 
-## 🛠️ Tech Stack
+### Technology Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Backend | TypeScript, Express.js, Node.js |
-| Database | SQLite (via Prisma ORM) |
-| Vector Store | ChromaDB (Docker) |
-| AI/LLM | Google Gemini API, Groq API |
-| Frontend | React, Vite, TypeScript |
-| Styling | Vanilla CSS (dark premium theme) |
+| Layer | Component |
+| :--- | :--- |
+| **Frontend** | React, TypeScript, Vite, Vanilla CSS |
+| **Backend API** | Node.js, Express.js, TypeScript |
+| **Database ORM** | Prisma |
+| **Relational Storage** | Supabase (PostgreSQL) |
+| **Vector Engine** | Supabase `pgvector` |
+| **AI Providers** | Google Gemini (Primary), Groq LLaMA (Fallback) |
 
-## 🚀 Local Setup
+---
 
-### Prerequisites
-- Node.js 18+
-- Docker (for ChromaDB)
-- A Gemini or Groq API key
+## Deployment & Setup
 
-### 1. Clone & Install
+This repository is configured for 100% cloud-native deployment. The storage tier utilizes Supabase, while the runtime backend is fully stateless.
+
+### 1. Environment Configuration
+
+Clone the repository and prepare the backend environment.
 
 ```bash
 git clone https://github.com/AyushCoder9/PromptPrep.git
-cd PromptPrep
+cd PromptPrep/backend
+cp .env.example .env
+```
 
-# Backend
-cd backend
-cp .env.example .env        # ← Add your API key here
-npm install --legacy-peer-deps
+Populate the following variables inside `.env`:
+```env
+DATABASE_URL="postgresql://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres?pgbouncer=true"
+GEMINI_API_KEY="your_api_key"
+GROQ_API_KEY="your_api_key_optional"
+```
+
+### 2. Initialization
+
+Install dependencies and generate the Prisma client mappings.
+
+```bash
+# Backend Setup
+npm install
 npx prisma generate
-npx prisma db push
 
-# Frontend
+# Frontend Setup
 cd ../frontend
 npm install
 ```
 
-### 2. Start ChromaDB (Docker)
+### 3. Execution
+
+Launch both servers locally.
 
 ```bash
-docker run -d -p 8000:8000 chromadb/chroma
-```
-
-### 3. Run
-
-```bash
-# Terminal 1 — Backend
-cd backend
+# Terminal 1: Backend
 npm run dev
 
-# Terminal 2 — Frontend
-cd frontend
+# Terminal 2: Frontend
 npm run dev
 ```
 
-- **Backend:** http://localhost:3001
-- **Frontend:** http://localhost:5173
+*   **API Server**: `http://localhost:3001`
+*   **Application Interface**: `http://localhost:5173`
 
-## 📁 Project Structure
+---
 
-```
-PromptPrep/
-├── idea.md                    # Project idea
-├── useCaseDiagram.md          # Use Case Diagram (Mermaid)
-├── sequenceDiagram.md         # Sequence Diagram (Mermaid)
-├── classDiagram.md            # Class Diagram (Mermaid)
-├── ErDiagram.md               # ER Diagram (Mermaid)
-├── backend/
-│   ├── src/
-│   │   ├── interfaces/        # OOP Contracts
-│   │   ├── parsers/           # Strategy Pattern
-│   │   ├── generators/        # Factory + Template Method
-│   │   ├── repositories/      # Repository Pattern
-│   │   ├── services/          # Business Logic (incl. Singleton VectorStore)
-│   │   ├── controllers/       # HTTP Layer
-│   │   ├── routes/            # Express Routes
-│   │   └── middleware/        # Error Handling
-│   └── prisma/                # Database Schema
-└── frontend/
-    └── src/
-        ├── pages/             # Dashboard, Upload, Quiz, Flashcards, Chat, Demo
-        ├── components/        # Sidebar
-        └── api/               # API Client
-```
+## API Documentation Reference
 
-## 📋 API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/health` | Health check |
-| `POST` | `/api/documents/upload` | Upload & process document |
-| `GET` | `/api/documents` | List all documents |
-| `POST` | `/api/quizzes/generate` | Generate quiz from document |
-| `POST` | `/api/quizzes/:id/submit` | Submit quiz answers |
-| `POST` | `/api/flashcards/generate` | Generate flashcards |
-| `POST` | `/api/qa/ask` | Ask a question (RAG) |
-
-## 👥 Team
-
-**Ayush Kumar Singh** — Full Stack Developer  
-B.Tech CSE, SRM Institute of Science and Technology
+| HTTP Method | Route | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/health` | Service availability check |
+| `POST` | `/api/documents/upload` | Injest, chunk, and embed target document |
+| `GET` | `/api/documents` | Retrieve all parsed materials |
+| `POST` | `/api/quizzes/generate` | Synthesize MCQ evaluation |
+| `POST` | `/api/quizzes/:id/submit` | Evaluate and score submitted answers |
+| `POST` | `/api/flashcards/generate` | Synthesize memory review cards |
+| `POST` | `/api/qa/ask` | Contextual RAG query invocation |
