@@ -59,16 +59,17 @@ export class DocumentService {
       userId,
     });
 
-    for (let i = 0; i < chunkTexts.length; i++) {
-      await (this.documentRepo as any)["prisma"].documentChunk.create({
-        data: {
-          id: `${fileId}_chunk_${i}`,
-          content: chunkTexts[i],
-          chunkIndex: i,
-          documentId: document.id,
-        },
-      });
-    }
+    // Batch insert all chunks for maximum performance (Vercel timeout protection)
+    const chunkData = chunkTexts.map((content, i) => ({
+      id: `${fileId}_chunk_${i}`,
+      content,
+      chunkIndex: i,
+      documentId: document.id,
+    }));
+
+    await (this.documentRepo as any)["prisma"].documentChunk.createMany({
+      data: chunkData,
+    });
 
     try {
       await this.vectorStore.addDocuments(chunkTexts, {

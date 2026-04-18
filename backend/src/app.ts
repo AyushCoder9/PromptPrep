@@ -13,7 +13,12 @@ export function createApp() {
   const app = express();
 
   // Middleware
-  app.use(cors());
+  app.use(cors({
+    origin: true, // Allow all origins like the previous setup, but more explicit
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    credentials: true,
+  }));
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ extended: true }));
 

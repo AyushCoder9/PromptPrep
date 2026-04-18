@@ -21,7 +21,12 @@ export class EnvConfig {
     this.nodeEnv = process.env.NODE_ENV || "development";
     this.databaseUrl = process.env.DATABASE_URL || "file:./dev.db";
     this.chromaHost = process.env.CHROMA_HOST || "http://localhost:8000";
-    this.uploadDir = path.resolve(__dirname, "../../uploads");
+    
+    // Vercel filesystem is read-only except for /tmp
+    const isVercel = process.env.VERCEL === "1";
+    this.uploadDir = isVercel 
+      ? path.join("/tmp", "uploads")
+      : path.resolve(__dirname, "../../uploads");
 
     this.geminiApiKey = process.env.GEMINI_API_KEY;
     this.groqApiKey = process.env.GROQ_API_KEY;
