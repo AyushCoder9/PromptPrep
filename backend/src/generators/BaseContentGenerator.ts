@@ -58,39 +58,31 @@ export abstract class BaseContentGenerator<T> implements IContentGenerator<T> {
    * Call the LLM with fallback support (Gemini → Groq).
    */
   protected async callLLM(prompt: string): Promise<string> {
-    const { provider, apiKey } = config.getAvailableLLMProvider();
-    this.logger.info(`Using LLM provider: ${provider}`);
-
-    try {
-      if (provider === "gemini") {
-        return await this.callGemini(apiKey, prompt);
-      } else if (provider === "groq") {
-        return await this.callGroq(apiKey, prompt);
-      }
-      throw new Error(`Unknown provider: ${provider}`);
-    } catch (error) {
-      this.logger.error(`LLM call failed with ${provider}`, error);
-
-      // Try fallback if primary fails
+    // Always try Gemini first if key is available
+    if (config.geminiApiKey && config.geminiApiKey !== "your_gemini_api_key_here") {
       try {
-        if (provider === "gemini" && config.groqApiKey) {
-          this.logger.info("Falling back to Groq...");
-          return await this.callGroq(config.groqApiKey, prompt);
-        } else if (provider === "groq" && config.geminiApiKey) {
-          this.logger.info("Falling back to Gemini...");
-          return await this.callGemini(config.geminiApiKey, prompt);
-        }
-      } catch (fallbackError) {
-        this.logger.error("Fallback LLM also failed", fallbackError);
+        return await this.callGemini(config.geminiApiKey, prompt);
+      } catch (geminiError: any) {
+        this.logger.warn(`Gemini failed (${geminiError?.message?.substring(0, 80)}). Falling back to Groq...`);
       }
-
-      throw new Error(`All LLM providers failed. Last error: ${error}`);
     }
+
+    // Fallback to Groq
+    if (config.groqApiKey && config.groqApiKey !== "your_groq_api_key_here") {
+      try {
+        return await this.callGroq(config.groqApiKey, prompt);
+      } catch (groqError: any) {
+        this.logger.error(`Groq fallback also failed: ${groqError?.message}`);
+        throw new Error("All AI providers are currently unavailable. Please try again in a moment.");
+      }
+    }
+
+    throw new Error("No LLM API key configured. Please add GEMINI_API_KEY or GROQ_API_KEY.");
   }
 
   private async callGemini(apiKey: string, prompt: string): Promise<string> {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     const result = await model.generateContent(prompt);
     return result.response.text();
   }

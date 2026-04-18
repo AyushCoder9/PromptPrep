@@ -2,6 +2,7 @@ import { config } from "../config/env";
 import { Logger } from "../utils/logger";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { prisma } from "../repositories/BaseRepository";
+import { memoryStore } from "./InMemoryStore";
 
 export class VectorStoreManager {
   private static instance: VectorStoreManager;
@@ -30,6 +31,9 @@ export class VectorStoreManager {
     await this.ensureInitialized();
     const embeddings = await this.generateEmbeddings(chunks);
 
+    // Always store embeddings in memory for resilience
+    memoryStore.addEmbeddings(metadata.documentId, embeddings);
+
     try {
       // Parallelize DB updates for maximum performance on Vercel
       await Promise.all(
@@ -45,8 +49,7 @@ export class VectorStoreManager {
       );
       this.logger.info(`Updated pgvector embeddings for ${chunks.length} chunks of document: ${metadata.title}`);
     } catch (error) {
-      this.logger.error("Failed to inject vector arrays to Supabase DocumentChunks", error);
-      throw error;
+      this.logger.warn("Supabase pgvector update failed. Embeddings are safe in memory for similarity search.");
     }
   }
 
@@ -59,6 +62,7 @@ export class VectorStoreManager {
     const queryEmbedding = await this.generateEmbeddings([query]);
     const vectorStr = `[${queryEmbedding[0].join(",")}]`;
 
+    // Try Supabase pgvector first
     try {
       let results: Array<{ content: string }>;
       
@@ -77,11 +81,21 @@ export class VectorStoreManager {
         );
       }
 
-      return results.map(r => r.content);
+      if (results.length > 0) {
+        return results.map(r => r.content);
+      }
     } catch (error) {
-      this.logger.error("Similarity search failed against Supabase pgvector", error);
-      return [];
+      this.logger.warn("Supabase pgvector search failed. Falling back to in-memory similarity search.");
     }
+
+    // Fallback: in-memory cosine similarity search
+    const memResults = memoryStore.similaritySearch(queryEmbedding[0], topK, documentId);
+    if (memResults.length > 0) {
+      this.logger.info(`In-memory search returned ${memResults.length} results`);
+      return memResults;
+    }
+
+    return [];
   }
 
   public async deleteDocument(documentId: string): Promise<void> {

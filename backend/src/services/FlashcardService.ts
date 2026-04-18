@@ -4,6 +4,8 @@ import { FlashcardGenerator, FlashcardItem } from "../generators/FlashcardGenera
 import { Logger } from "../utils/logger";
 import { GenerateOptions } from "../interfaces/IContentGenerator";
 import { prisma } from "../repositories/BaseRepository";
+import { memoryStore } from "./InMemoryStore";
+import { v4 as uuidv4 } from "uuid";
 
 export class FlashcardService {
   private flashcardRepo: FlashcardRepository;
@@ -32,12 +34,18 @@ export class FlashcardService {
 
     if (contextChunks.length === 0) {
       this.logger.warn(`Vector search returned empty, falling back to database chunks`);
-      const sqliteChunks = await (prisma as any).documentChunk.findMany({
-        where: { documentId },
-        orderBy: { chunkIndex: "asc" },
-        take: 8,
-      });
-      contextChunks = sqliteChunks.map((c: { content: string }) => c.content);
+      try {
+        const dbChunks = await (prisma as any).documentChunk.findMany({
+          where: { documentId },
+          orderBy: { chunkIndex: "asc" },
+          take: 8,
+        });
+        contextChunks = dbChunks.map((c: { content: string }) => c.content);
+      } catch {
+        this.logger.warn("DB unreachable, falling back to in-memory chunks");
+        const memChunks = memoryStore.getChunks(documentId, 8);
+        contextChunks = memChunks.map((c: any) => c.content);
+      }
     }
 
     if (contextChunks.length === 0) {
@@ -47,13 +55,20 @@ export class FlashcardService {
     const context = contextChunks.join("\n\n---\n\n");
     const flashcards = await this.generator.generate(context, options);
 
-    // 3. Store in database
+    // Store in database with in-memory fallback
     for (const fc of flashcards) {
-      await this.flashcardRepo.create({
+      const fcData = {
+        id: uuidv4(),
         term: fc.term,
         definition: fc.definition,
         documentId,
-      } as any);
+      };
+      try {
+        await this.flashcardRepo.create(fcData as any);
+      } catch {
+        this.logger.warn("DB unreachable, storing flashcard in memory only");
+      }
+      memoryStore.addFlashcard(documentId, fcData);
     }
 
     this.logger.info(`Generated ${flashcards.length} flashcards for document: ${documentId}`);
@@ -61,10 +76,21 @@ export class FlashcardService {
   }
 
   async getFlashcardsByDocument(documentId: string) {
-    return this.flashcardRepo.findByDocumentId(documentId);
+    try {
+      const dbCards = await this.flashcardRepo.findByDocumentId(documentId);
+      if (dbCards.length > 0) return dbCards;
+    } catch {
+      this.logger.warn("DB unreachable, serving flashcards from memory");
+    }
+    return memoryStore.getFlashcardsByDocument(documentId);
   }
 
   async deleteFlashcard(id: string): Promise<void> {
-    await this.flashcardRepo.delete(id);
+    try {
+      await this.flashcardRepo.delete(id);
+    } catch {
+      this.logger.warn("DB unreachable, deleting flashcard from memory only");
+    }
+    memoryStore.deleteFlashcard(id);
   }
 }

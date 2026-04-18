@@ -43,7 +43,7 @@ async function bootstrap() {
 
 
   const app = createApp();
-  app.listen(config.port, () => {
+  app.listen(config.port, "0.0.0.0", () => {
     logger.info(`🚀 PromptPrep API running at http://localhost:${config.port}`);
     logger.info(`📋 Health check: http://localhost:${config.port}/api/health`);
   });

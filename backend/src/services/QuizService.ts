@@ -4,6 +4,8 @@ import { QuizGenerator, QuizResult } from "../generators/QuizGenerator";
 import { Logger } from "../utils/logger";
 import { GenerateOptions } from "../interfaces/IContentGenerator";
 import { prisma } from "../repositories/BaseRepository";
+import { memoryStore } from "./InMemoryStore";
+import { v4 as uuidv4 } from "uuid";
 
 export class QuizService {
   private quizRepo: QuizRepository;
@@ -32,12 +34,18 @@ export class QuizService {
 
     if (contextChunks.length === 0) {
       this.logger.warn(`Vector search returned empty, falling back to database chunks`);
-      const sqliteChunks = await (prisma as any).documentChunk.findMany({
-        where: { documentId },
-        orderBy: { chunkIndex: "asc" },
-        take: 8,
-      });
-      contextChunks = sqliteChunks.map((c: { content: string }) => c.content);
+      try {
+        const dbChunks = await (prisma as any).documentChunk.findMany({
+          where: { documentId },
+          orderBy: { chunkIndex: "asc" },
+          take: 8,
+        });
+        contextChunks = dbChunks.map((c: { content: string }) => c.content);
+      } catch {
+        this.logger.warn("DB unreachable, falling back to in-memory chunks");
+        const memChunks = memoryStore.getChunks(documentId, 8);
+        contextChunks = memChunks.map((c: any) => c.content);
+      }
     }
 
     if (contextChunks.length === 0) {
@@ -47,43 +55,82 @@ export class QuizService {
     const context = contextChunks.join("\n\n---\n\n");
     const quizResult = await this.generator.generate(context, options);
 
-    const quiz = await this.quizRepo.create({
+    const quizId = uuidv4();
+    const quizData = {
+      id: quizId,
       title: quizResult.title,
       difficulty: options?.difficulty || "medium",
       totalMarks: quizResult.questions.length,
       documentId,
-    } as any);
+    };
 
+    // Try to persist to DB, fall back to memory
+    let persistedQuiz: any = null;
+    try {
+      persistedQuiz = await this.quizRepo.create(quizData as any);
+      for (const q of quizResult.questions) {
+        await this.quizRepo["prisma"].question.create({
+          data: {
+            text: q.text,
+            options: JSON.stringify(q.options),
+            correctAnswer: q.correctAnswer,
+            explanation: q.explanation,
+            quizId: persistedQuiz.id,
+          },
+        });
+      }
+    } catch {
+      this.logger.warn("DB unreachable, storing quiz in memory only");
+      persistedQuiz = quizData;
+    }
+
+    // Always store in memory for resilience
+    memoryStore.addQuiz(persistedQuiz);
     for (const q of quizResult.questions) {
-      await this.quizRepo["prisma"].question.create({
-        data: {
-          text: q.text,
-          options: JSON.stringify(q.options),
-          correctAnswer: q.correctAnswer,
-          explanation: q.explanation,
-          quizId: quiz.id,
-        },
+      memoryStore.addQuestion(persistedQuiz.id, {
+        id: uuidv4(),
+        text: q.text,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation,
+        quizId: persistedQuiz.id,
       });
     }
 
-    return { quizId: quiz.id, quiz: quizResult };
+    return { quizId: persistedQuiz.id, quiz: quizResult };
   }
 
   async getQuiz(id: string) {
-    const quiz = await this.quizRepo.findWithQuestions(id);
-    if (!quiz) throw new Error("Quiz not found");
+    // Try DB first
+    try {
+      const quiz = await this.quizRepo.findWithQuestions(id);
+      if (quiz) {
+        return {
+          ...quiz,
+          questions: (quiz as any).questions.map((q: any) => ({
+            ...q,
+            options: typeof q.options === "string" ? JSON.parse(q.options) : q.options,
+          })),
+        };
+      }
+    } catch {
+      this.logger.warn("DB unreachable, serving quiz from memory");
+    }
 
-    return {
-      ...quiz,
-      questions: (quiz as any).questions.map((q: any) => ({
-        ...q,
-        options: JSON.parse(q.options),
-      })),
-    };
+    // Fallback to memory
+    const memQuiz = memoryStore.getQuiz(id);
+    if (!memQuiz) throw new Error("Quiz not found");
+    return memQuiz;
   }
 
   async getQuizzesByDocument(documentId: string) {
-    return this.quizRepo.findByDocumentId(documentId);
+    try {
+      const quizzes = await this.quizRepo.findByDocumentId(documentId);
+      if (quizzes.length > 0) return quizzes;
+    } catch {
+      this.logger.warn("DB unreachable, serving quizzes from memory");
+    }
+    return memoryStore.getQuizzesByDocument(documentId);
   }
 
   async submitQuiz(quizId: string, answers: Record<string, string>) {
@@ -104,7 +151,13 @@ export class QuizService {
       };
     });
 
-    await this.quizRepo.updateScore(quizId, score);
+    // Try to persist score to DB
+    try {
+      await this.quizRepo.updateScore(quizId, score);
+    } catch {
+      this.logger.warn("DB unreachable, storing score in memory only");
+    }
+    memoryStore.updateQuizScore(quizId, score);
 
     return {
       quizId,

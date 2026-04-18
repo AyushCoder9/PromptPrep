@@ -5,12 +5,12 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "npx prisma generate",
+    "build": "npx prisma generate && tsc",
     "start": "node dist/index.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
     "prisma:push": "prisma db push",
-    "setup": "npm install && npx prisma generate && npx prisma db push",
+    "setup": "npm install && npx prisma generate && tsc && npx prisma db push",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -22,8 +22,8 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
-    "groq-sdk": "^0.8.0",
-    "multer": "^1.4.5-lts.2",
+    "groq-sdk": "^1.1.2",
+    "multer": "^2.1.1",
     "pdf-parse": "^1.1.1",
     "uuid": "^10.0.0"
   },

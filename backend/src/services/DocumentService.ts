@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from "uuid";
 import fs from "fs";
 import path from "path";
 import { config } from "../config/env";
+import { memoryStore } from "./InMemoryStore";
 
 export class DocumentService {
   private documentRepo: DocumentRepository;
@@ -31,9 +32,19 @@ export class DocumentService {
     const textContent = await parser.parse(file.buffer, file.originalname);
 
     const contentHash = createHash("sha256").update(textContent).digest("hex");
-    const existing = await this.documentRepo.findByHash(contentHash);
-    if (existing) {
-      return { id: existing.id, title: existing.title, chunkCount: existing.chunkCount };
+
+    // Check for duplicate — try DB first, fallback to memory
+    try {
+      const existing = await this.documentRepo.findByHash(contentHash);
+      if (existing) {
+        return { id: existing.id, title: existing.title, chunkCount: existing.chunkCount };
+      }
+    } catch {
+      this.logger.warn("DB unreachable during duplicate check, checking in-memory store");
+      const memExisting = memoryStore.findDocumentByHash(contentHash);
+      if (memExisting) {
+        return { id: memExisting.id, title: memExisting.title, chunkCount: memExisting.chunkCount };
+      }
     }
 
     const fileId = uuidv4();
@@ -46,9 +57,9 @@ export class DocumentService {
 
     const chunks = this.chunker.chunk(textContent);
     const chunkTexts = chunks.map((c) => c.content);
-
     const title = file.originalname.replace(/\.[^.]+$/, "");
-    const document = await this.documentRepo.create({
+
+    const docData = {
       id: fileId,
       title,
       fileName: file.originalname,
@@ -57,43 +68,83 @@ export class DocumentService {
       mimeType: file.mimetype,
       chunkCount: chunkTexts.length,
       userId,
-    });
+    };
 
-    // Batch insert all chunks for maximum performance (Vercel timeout protection)
     const chunkData = chunkTexts.map((content, i) => ({
       id: `${fileId}_chunk_${i}`,
       content,
       chunkIndex: i,
-      documentId: document.id,
+      documentId: fileId,
     }));
 
-    await (this.documentRepo as any)["prisma"].documentChunk.createMany({
-      data: chunkData,
-    });
+    // Always store in memory (instant, guaranteed)
+    memoryStore.addDocument(docData);
+    memoryStore.addChunks(fileId, chunkData);
 
+    // Try to persist to Supabase (non-blocking if it fails)
     try {
-      await this.vectorStore.addDocuments(chunkTexts, {
-        documentId: document.id,
-        title: document.title,
+      await this.documentRepo.create(docData);
+      await (this.documentRepo as any)["prisma"].documentChunk.createMany({
+        data: chunkData,
       });
-    } catch (error) {
-      this.logger.warn("Vector store indexing failed", error);
+      this.logger.info("Document persisted to Supabase");
+    } catch (dbError: any) {
+      this.logger.warn(`Supabase write failed (${dbError?.message?.substring(0, 60)}). Data is safe in memory.`);
     }
 
-    this.logger.info(`Document processed: ${document.title}`);
-    return { id: document.id, title: document.title, chunkCount: chunkTexts.length };
+    // Try to index embeddings
+    try {
+      await this.vectorStore.addDocuments(chunkTexts, {
+        documentId: fileId,
+        title,
+      });
+    } catch (error) {
+      this.logger.warn("Vector store indexing failed, in-memory search will be used");
+    }
+
+    this.logger.info(`Document processed: ${title}`);
+    return { id: fileId, title, chunkCount: chunkTexts.length };
   }
 
   async getDocuments(userId: string) {
-    return this.documentRepo.findByUserId(userId);
+    try {
+      const docs = await this.documentRepo.findByUserId(userId);
+      // Merge any in-memory-only documents
+      const dbIds = new Set(docs.map((d: any) => d.id));
+      const memDocs = memoryStore.getDocumentsByUser(userId).filter((d) => !dbIds.has(d.id));
+      return [...docs, ...memDocs];
+    } catch {
+      this.logger.warn("DB unreachable, serving documents from in-memory store");
+      return memoryStore.getDocumentsByUser(userId);
+    }
   }
 
   async getDocument(id: string) {
-    return this.documentRepo.findWithRelations(id);
+    try {
+      const doc = await this.documentRepo.findWithRelations(id);
+      if (doc) return doc;
+    } catch {
+      this.logger.warn("DB unreachable, serving document from in-memory store");
+    }
+    // Fallback to memory
+    const memDoc = memoryStore.getDocument(id);
+    if (memDoc) {
+      return {
+        ...memDoc,
+        quizzes: memoryStore.getQuizzesByDocument(id),
+        flashcards: memoryStore.getFlashcardsByDocument(id),
+      };
+    }
+    return null;
   }
 
   async deleteDocument(id: string): Promise<void> {
-    await this.vectorStore.deleteDocument(id);
-    await this.documentRepo.delete(id);
+    try {
+      await this.vectorStore.deleteDocument(id);
+      await this.documentRepo.delete(id);
+    } catch {
+      this.logger.warn("DB unreachable during delete, removing from in-memory store only");
+    }
+    memoryStore.deleteDocument(id);
   }
 }
