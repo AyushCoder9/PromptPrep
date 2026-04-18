@@ -1,6 +1,6 @@
-# Prompt Prep | AI-Powered Document Intelligence
+# Prompt Prep | Precision Study Ecosystem
 
-![Prompt Prep Banner](https://readme-typing-svg.demolab.com?font=Fira+Code&size=45&pause=1000&color=3B82F6&center=true&vCenter=true&width=1000&height=100&lines=PROMPT+PREP;AI+STUDY+COMPANION;NEURAL+KNOWLEDGE+EXTRACTION)
+![Prompt Prep Banner](https://readme-typing-svg.demolab.com?font=Montserrat&size=45&pause=1000&color=FF4D4D&center=true&vCenter=true&width=1000&height=100&lines=PROMPT+PREP;INTELLIGENT+KNOWLEDGE+ENGINE;SEMANTIC+STUDY+ORCHESTRATOR)
 
 <div align="center">
 
@@ -15,53 +15,50 @@
 
 ---
 
-Prompt Prep is a sophisticated Full-Stack application designed to transform static educational documents into interactive, conversational learning environments. By leveraging Retrieval-Augmented Generation (RAG) and high-fidelity Large Language Models, it provides deep document analysis, automated assessment generation, and context-grounded intelligence.
+Prompt Prep is a custom-engineered full-stack platform designed to synthesize vast amounts of educational data into high-utility learning assets. By integrating vector-based similarity search with state-of-the-art language models, the system enables users to parse documents deeply, generate rigorous academic evaluations, and interact with their notes through a precisely grounded conversational layer.
 
 ## Core Capabilities
 
-*   **Neural Document Ingestion**: Advanced parsing and semantic chunking of PDFs and text files, optimized for vector indexing.
-*   **Contextual RAG Chat**: A natural language interface strictly grounded in your library—eliminating AI hallucinations.
-*   **Automated Knowledge Assessments**: Synthesize multiple-choice quizzes with detailed explanations and dynamic difficulty.
-*   **High-Fidelity Flashcards**: Automatic extraction of atomic concepts (Term/Definition) for high-efficiency memory retention.
-*   **Resilient AI Pipeline**: Dual-engine architecture with automatic fallback between Google Gemini and Groq (LLaMA 3).
+*   **Semantic Data Harmonization**: Multi-format document parsing (PDF, MD, TXT) with intelligent chunking tailored for high-precision retrieval.
+*   **Grounded Conversational Intelligence**: A retrieval-augmented query layer that guarantees accuracy by sourcing responses directly from private datasets.
+*   **Automated Knowledge Evaluation**: Dynamic synthesis of comprehensive MCQ sets with automated scoring and exhaustive reasoning explanations.
+*   **Rapid-Recall Synthesis**: Algorithmic extraction of core concepts into structured flashcards for accelerated knowledge retention.
+*   **Adaptive LLM Orchestration**: Dual-engine intelligence spanning Google Gemini and Groq, featuring real-time provider switching and resilience.
 
 ## Technical Architecture
 
-The platform is built on a modular, stateless architecture designed for high throughput and precision retrieval.
+The architecture leverages a high-concurrency Node.js environment coupled with a vectorized relational database to maintain low-latency response times during complex RAG operations.
 
 ```mermaid
 graph TD
-    Client[React + Framer Motion]
-    API[Express.js Node Backend]
-    Service[Service Layer]
-    Vector[Semantic Search Engine]
-    DB[(Supabase PostgreSQL)]
-    LLM{Gemini / Groq LLMs}
+    UI[Interactive React Interface]
+    Core[Node.js Orchestration layer]
+    Logic[Service Architecture]
+    Storage[(Supabase Hub)]
+    Neural[Gemini & Groq Models]
 
-    Client -->|REST API| API
-    API --> Service
-    Service -->|Contextual Retrieval| Vector
-    Service -->|Knowledge Generation| LLM
-    Vector -->|pgvector Query| DB
+    UI -->|API Requests| Core
+    Core --> Logic
+    Logic -->|Vector Indexing| Storage
+    Logic -->|Semantic Context| Neural
 ```
 
-### Modular Design Systems
-- **Strategy Pattern**: Dynamic parsing selection based on file heuristics.
-- **Factory Pattern**: Centralized orchestration for AI generation modules.
-- **Repository Pattern**: Abstracted data access layer using Prisma ORM.
+### Engineered Architecture Patterns
+- **Provider Strategy**: Decoupled AI interfaces allowing seamless transitions between different LLM backends.
+- **Factory Orchestration**: Centralized management for content generation and document processing flows.
+- **Entity Repository**: Robust data persistence model powered by Prisma ORM.
 
 ---
 
-## Implementation Stack
+## Implementation Foundations
 
-| Layer | Technology | Utility |
+| Layer | Environment | Purpose |
 | :--- | :--- | :--- |
-| **Runtime** | Node.js | Asynchronous backend execution |
-| **Frontend** | React 18 | Declarative UI and state management |
-| **Logic** | TypeScript | Type-safe development across the stack |
-| **Database** | Supabase | Relational data and transactional pooling |
-| **Vectors** | pgvector | High-performance semantic similarity search |
-| **Generative AI**| Google Gemini | Core reasoning and content synthesis |
+| **Logic Engine** | Node.js / TypeScript | High-concurrency operations and type-safety |
+| **UI Framework** | React 18 / Framer | Fluid interactions and state-driven design |
+| **Data Hub** | Supabase (Postgres) | Relational storage and managed pooling |
+| **Vector Engine** | pgvector | Semantic similarity and distance metrics |
+| **Inference** | Google Gemini | Primary reasoning and contextual synthesis |
 
 ---
 

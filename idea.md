@@ -1,4 +1,4 @@
-# PromptPrep — AI-Powered Study Material Generator
+# Prompt Prep | Precision Study Ecosystem
 
 ## Problem
 Students drown in unstructured PDFs and lecture notes. They lack the tools to quickly test their understanding or create structured review materials, leading to passive reading instead of active learning.
