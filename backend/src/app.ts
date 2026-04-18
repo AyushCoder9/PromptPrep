@@ -14,10 +14,9 @@ export function createApp() {
 
   // Middleware
   app.use(cors({
-    origin: true, // Allow all origins like the previous setup, but more explicit
+    origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-    credentials: true,
   }));
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ extended: true }));
