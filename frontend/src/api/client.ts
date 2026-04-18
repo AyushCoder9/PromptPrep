@@ -14,11 +14,15 @@ async function request<T>(
     headers: { "Content-Type": "application/json" },
     ...options,
   });
+  const text = await res.text();
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: "Request failed" }));
+    let err = { error: "Request failed" };
+    if (text) {
+      try { err = JSON.parse(text); } catch (e) {}
+    }
     throw new Error(err.error || `Request failed: ${res.status}`);
   }
-  return res.json();
+  return text ? JSON.parse(text) : {};
 }
 
 export const api = {
@@ -31,11 +35,15 @@ export const api = {
       method: "POST",
       body: formData,
     });
+    const text = await res.text();
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: "Upload failed" }));
+      let err = { error: "Upload failed" };
+      if (text) {
+        try { err = JSON.parse(text); } catch (e) {}
+      }
       throw new Error(err.error || "Upload failed");
     }
-    return res.json();
+    return text ? JSON.parse(text) : {};
   },
 
   getDocuments: () => request<any[]>("/documents?userId=default-user"),
