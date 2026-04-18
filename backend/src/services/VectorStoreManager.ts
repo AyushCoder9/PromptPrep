@@ -31,16 +31,18 @@ export class VectorStoreManager {
     const embeddings = await this.generateEmbeddings(chunks);
 
     try {
-      for (let i = 0; i < chunks.length; i++) {
-        const vectorStr = `[${embeddings[i].join(",")}]`;
-        
-        await prisma.$executeRawUnsafe(
-          `UPDATE "DocumentChunk" SET embedding = $1::vector WHERE "documentId" = $2 AND "chunkIndex" = $3`,
-          vectorStr,
-          metadata.documentId,
-          i
-        );
-      }
+      // Parallelize DB updates for maximum performance on Vercel
+      await Promise.all(
+        chunks.map((_, i) => {
+          const vectorStr = `[${embeddings[i].join(",")}]`;
+          return prisma.$executeRawUnsafe(
+            `UPDATE "DocumentChunk" SET embedding = $1::vector WHERE "documentId" = $2 AND "chunkIndex" = $3`,
+            vectorStr,
+            metadata.documentId,
+            i
+          );
+        })
+      );
       this.logger.info(`Updated pgvector embeddings for ${chunks.length} chunks of document: ${metadata.title}`);
     } catch (error) {
       this.logger.error("Failed to inject vector arrays to Supabase DocumentChunks", error);
@@ -104,12 +106,14 @@ export class VectorStoreManager {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
 
-    const embeddings: number[][] = [];
-    for (const text of texts) {
-      const result = await model.embedContent(text);
-      embeddings.push(result.embedding.values);
-    }
-    return embeddings;
+    // Use batchEmbedContents to reduce latency from O(N) to O(1)
+    const result = await model.batchEmbedContents({
+      requests: texts.map((t) => ({
+        content: { parts: [{ text: t }] },
+      })),
+    });
+
+    return result.embeddings.map((e) => e.values);
   }
 
   private async simpleEmbeddings(texts: string[]): Promise<number[][]> {
