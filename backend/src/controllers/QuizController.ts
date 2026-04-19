@@ -2,9 +2,6 @@ import { Request, Response, NextFunction } from "express";
 import { QuizService } from "../services/QuizService";
 import { Logger } from "../utils/logger";
 
-/**
- * QuizController — HTTP Layer
- */
 export class QuizController {
   private service: QuizService;
   private logger = new Logger("QuizController");

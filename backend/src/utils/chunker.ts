@@ -1,7 +1,3 @@
-/**
- * Text chunking utility for RAG pipeline.
- * Splits large documents into overlapping chunks for vector indexing.
- */
 export interface TextChunk {
   content: string;
   index: number;

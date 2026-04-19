@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
 import AnimatedPage from "../components/AnimatedPage";
-import Icon from "../components/Icon";
+import Icon, { type IconName } from "../components/Icon";
 
 const STAGGER: Variants = {
   hidden: { opacity: 0 },
@@ -35,16 +35,16 @@ const features = [
 const workflowSteps = [
   { step: "01", title: "Upload Notes", text: "Drag and drop your PDFs, lectures, or paste raw text." },
   { step: "02", title: "AI Parsing", text: "We instantly process and split your content into semantic chunks." },
-  { step: "03", title: "Vector Indexing", text: "Chunks are embedded and mapped perfectly using ChromaDB." },
+  { step: "03", title: "Vector Indexing", text: "Chunks are embedded and mapped perfectly using pgvector." },
   { step: "04", title: "Study & Chat", text: "Generate flashcards, quizzes, or context-aware chat replies." }
 ];
 
-const techStack = [
+const techStack: { name: string; type: string; icon: IconName }[] = [
   { name: "React 18", type: "Frontend Library", icon: "react" },
   { name: "Framer Motion", type: "UI Physics & Animation", icon: "sparkle" },
   { name: "Express.js REST", type: "Backend API routing", icon: "server" },
-  { name: "Prisma & SQLite", type: "Relational Database", icon: "database" },
-  { name: "ChromaDB", type: "Vector Distance Search", icon: "layers" },
+  { name: "Prisma & Supabase", type: "Relational Database", icon: "database" },
+  { name: "PostgreSQL pgvector", type: "Vector Distance Search", icon: "layers" },
   { name: "Google Gemini", type: "Generative AI", icon: "bot" },
   { name: "RAG Pipeline", type: "Retrieval-Augmented Gen", icon: "network" },
   { name: "Semantic Chunking", type: "Text Split Algorithm", icon: "document" },
@@ -68,7 +68,7 @@ export default function Landing() {
           </span>
           <span className="landing-nav__title">PromptPrep</span>
         </Link>
-        {/* Navbar links removed as requested */}
+
       </header>
 
       <main className="landing-main">
@@ -170,9 +170,7 @@ export default function Landing() {
                 whileHover={{ y: -5, scale: 1.05, transition: { type: "spring", stiffness: 400, damping: 10 } }}
                 className="tech-card"
               >
-                <div className="tech-card__icon">
-                  <Icon name={tech.icon as any} size={24} />
-                </div>
+                  <Icon name={tech.icon} size={24} />
                 <div className="tech-card__info">
                   <h4 className="tech-card__name">{tech.name}</h4>
                   <span className="tech-card__type">{tech.type}</span>

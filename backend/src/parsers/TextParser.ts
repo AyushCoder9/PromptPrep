@@ -1,10 +1,6 @@
 import { IDocumentParser } from "../interfaces/IDocumentParser";
 import { Logger } from "../utils/logger";
 
-/**
- * TextParser — Concrete Strategy for parsing plain text files.
- * Implements the IDocumentParser interface (Strategy Pattern).
- */
 export class TextParser implements IDocumentParser {
   private logger = new Logger("TextParser");
 

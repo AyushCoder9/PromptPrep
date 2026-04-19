@@ -1,11 +1,3 @@
-/**
- * IContentGenerator<T> — Generic interface for content generation.
- *
- * Used as the contract for the Factory Pattern.
- * QuizGenerator and FlashcardGenerator implement this via
- * the BaseContentGenerator abstract class.
- */
-
 export interface GenerateOptions {
   difficulty?: "easy" | "medium" | "hard";
   count?: number;

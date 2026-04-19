@@ -6,12 +6,6 @@ export interface FlashcardItem {
   definition: string;
 }
 
-/**
- * FlashcardGenerator — Extends BaseContentGenerator
- *
- * Generates term/definition flashcards from study material.
- * Overrides buildPrompt() and parseResponse() from the abstract base.
- */
 export class FlashcardGenerator extends BaseContentGenerator<FlashcardItem[]> {
   constructor() {
     super("FlashcardGenerator");

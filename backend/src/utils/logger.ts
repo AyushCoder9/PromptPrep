@@ -1,6 +1,3 @@
-/**
- * Logger utility for consistent application logging.
- */
 export class Logger {
   private context: string;
 

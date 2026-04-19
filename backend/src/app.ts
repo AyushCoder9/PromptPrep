@@ -9,10 +9,6 @@ import { Logger } from "./utils/logger";
 
 const logger = new Logger("App");
 
-/**
- * Express application setup.
- * Registers middleware, routes, and error handler.
- */
 export function createApp() {
   const app = express();
 

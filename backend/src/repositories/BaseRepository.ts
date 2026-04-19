@@ -4,12 +4,6 @@ import { IRepository } from "../interfaces/IRepository";
 // Shared Prisma client instance
 export const prisma = new PrismaClient();
 
-/**
- * BaseRepository<T> — Abstract Repository Pattern
- *
- * Provides generic CRUD operations using Prisma.
- * Concrete repositories extend this with entity-specific queries.
- */
 export abstract class BaseRepository<T> implements IRepository<T> {
   protected prisma: PrismaClient;
   protected abstract modelName: string;

@@ -2,11 +2,6 @@ import { Request, Response, NextFunction } from "express";
 import { QAService } from "../services/QAService";
 import { Logger } from "../utils/logger";
 
-/**
- * QAController — HTTP Layer
- *
- * Handles context-aware Q&A requests.
- */
 export class QAController {
   private service: QAService;
   private logger = new Logger("QAController");

@@ -5,12 +5,6 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import Groq from "groq-sdk";
 import { prisma } from "../repositories/BaseRepository";
 
-/**
- * QAService — Business Logic Layer
- *
- * Handles context-aware Q&A ("Chat with your notes").
- * Uses RAG: Retrieve relevant chunks → Send to LLM with question → Return answer.
- */
 export class QAService {
   private vectorStore: VectorStoreManager;
   private logger = new Logger("QAService");
@@ -19,9 +13,6 @@ export class QAService {
     this.vectorStore = VectorStoreManager.getInstance();
   }
 
-  /**
-   * Answer a question using document context (RAG).
-   */
   async askQuestion(
     question: string,
     documentId?: string

@@ -3,11 +3,6 @@ import path from "path";
 
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
-/**
- * Singleton configuration manager.
- * Loads environment variables and provides a centralized access point.
- * Implements a fallback system for LLM API keys.
- */
 export class EnvConfig {
   private static instance: EnvConfig;
 

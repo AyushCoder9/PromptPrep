@@ -2,10 +2,6 @@ import { IDocumentParser } from "../interfaces/IDocumentParser";
 import pdfParse from "pdf-parse";
 import { Logger } from "../utils/logger";
 
-/**
- * PDFParser — Concrete Strategy for parsing PDF files.
- * Implements the IDocumentParser interface (Strategy Pattern).
- */
 export class PDFParser implements IDocumentParser {
   private logger = new Logger("PDFParser");
 

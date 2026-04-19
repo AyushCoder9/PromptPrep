@@ -5,11 +5,6 @@ import { Logger } from "../utils/logger";
 import { GenerateOptions } from "../interfaces/IContentGenerator";
 import { prisma } from "../repositories/BaseRepository";
 
-/**
- * QuizService — Business Logic Layer
- *
- * Fetches context from vector store → uses QuizGenerator → stores result.
- */
 export class QuizService {
   private quizRepo: QuizRepository;
   private vectorStore: VectorStoreManager;
@@ -22,16 +17,12 @@ export class QuizService {
     this.generator = new QuizGenerator();
   }
 
-  /**
-   * Generate a quiz from a document's indexed content.
-   */
   async generateQuiz(
     documentId: string,
     options?: GenerateOptions
   ): Promise<{ quizId: string; quiz: QuizResult }> {
     this.logger.info(`Generating quiz for document: ${documentId}`);
 
-    // 1. Retrieve relevant context from vector store
     const topic = options?.topic || "the uploaded study material";
     let contextChunks = await this.vectorStore.similaritySearch(
       `Generate quiz questions about ${topic}`,
@@ -39,9 +30,8 @@ export class QuizService {
       documentId
     );
 
-    // Fallback: if vector search returns nothing, read raw chunks from SQLite
     if (contextChunks.length === 0) {
-      this.logger.warn(`Vector search returned empty for ${documentId}, reading chunks from SQLite`);
+      this.logger.warn(`Vector search returned empty, falling back to database chunks`);
       const sqliteChunks = await (prisma as any).documentChunk.findMany({
         where: { documentId },
         orderBy: { chunkIndex: "asc" },
@@ -51,15 +41,12 @@ export class QuizService {
     }
 
     if (contextChunks.length === 0) {
-      throw new Error("No content found for this document. Please re-upload.");
+      throw new Error("No content found for this document.");
     }
 
     const context = contextChunks.join("\n\n---\n\n");
-
-    // 2. Generate quiz using the QuizGenerator
     const quizResult = await this.generator.generate(context, options);
 
-    // 3. Store in database
     const quiz = await this.quizRepo.create({
       title: quizResult.title,
       difficulty: options?.difficulty || "medium",
@@ -67,7 +54,6 @@ export class QuizService {
       documentId,
     } as any);
 
-    // Store questions
     for (const q of quizResult.questions) {
       await this.quizRepo["prisma"].question.create({
         data: {
@@ -80,7 +66,6 @@ export class QuizService {
       });
     }
 
-    this.logger.info(`Quiz generated: ${quiz.id} with ${quizResult.questions.length} questions`);
     return { quizId: quiz.id, quiz: quizResult };
   }
 

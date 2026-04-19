@@ -1,10 +1,3 @@
-/**
- * IDocumentParser — Strategy Pattern Interface
- *
- * Defines the contract for document parsing strategies.
- * Each parser handles a specific file type (PDF, Text, etc.)
- * and provides a uniform interface for the DocumentService.
- */
 export interface IDocumentParser {
   /**
    * Parse a file buffer and extract text content.

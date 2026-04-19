@@ -9,7 +9,7 @@ const logger = new Logger("Server");
 async function bootstrap() {
   logger.info("Starting PromptPrep server...");
 
-  // Ensure default user exists
+
   try {
     await prisma.user.upsert({
       where: { username: "default" },
@@ -24,7 +24,7 @@ async function bootstrap() {
     logger.warn("Could not create default user (DB may not be ready)", e);
   }
 
-  // Initialize vector store
+
   try {
     const vectorStore = VectorStoreManager.getInstance();
     await vectorStore.initialize();
@@ -33,7 +33,7 @@ async function bootstrap() {
     logger.warn("ChromaDB not available. Vector features will be limited.", error);
   }
 
-  // Check LLM availability
+
   try {
     const { provider } = config.getAvailableLLMProvider();
     logger.info(`LLM provider available: ${provider}`);
@@ -41,7 +41,7 @@ async function bootstrap() {
     logger.warn("No LLM API key configured. Add GEMINI_API_KEY or GROQ_API_KEY to .env");
   }
 
-  // Start server
+
   const app = createApp();
   app.listen(config.port, () => {
     logger.info(`🚀 PromptPrep API running at http://localhost:${config.port}`);

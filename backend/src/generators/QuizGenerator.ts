@@ -13,12 +13,6 @@ export interface QuizResult {
   questions: QuizQuestion[];
 }
 
-/**
- * QuizGenerator — Extends BaseContentGenerator
- *
- * Generates MCQ quizzes from study material context.
- * Overrides buildPrompt() and parseResponse() from the abstract base.
- */
 export class QuizGenerator extends BaseContentGenerator<QuizResult> {
   constructor() {
     super("QuizGenerator");

@@ -1,10 +1,6 @@
 import { BaseRepository } from "./BaseRepository";
 import { Document } from "@prisma/client";
 
-/**
- * DocumentRepository — Concrete Repository
- * Extends BaseRepository with document-specific queries.
- */
 export class DocumentRepository extends BaseRepository<Document> {
   protected modelName = "document";
 

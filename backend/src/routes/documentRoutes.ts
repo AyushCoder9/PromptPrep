@@ -5,7 +5,6 @@ import { DocumentController } from "../controllers/DocumentController";
 const router = Router();
 const controller = new DocumentController();
 
-// Multer config: store in memory buffer (for parsing)
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 50 * 1024 * 1024 }, // 50MB max

@@ -3,12 +3,6 @@ import { Logger } from "../utils/logger";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { prisma } from "../repositories/BaseRepository";
 
-/**
- * VectorStoreManager — Singleton Pattern
- *
- * Manages the connection to Supabase pgvector schema.
- * Provides methods for updating DocumentChunks with vector arrays and executing similarity search.
- */
 export class VectorStoreManager {
   private static instance: VectorStoreManager;
   private logger = new Logger("VectorStoreManager");
@@ -23,19 +17,12 @@ export class VectorStoreManager {
     return VectorStoreManager.instance;
   }
 
-  /**
-   * Initialize the vector store integration.
-   * Supabase/pgvector requires no dynamic collection initialization.
-   */
   public async initialize(): Promise<void> {
     if (this.initialized) return;
     this.initialized = true;
     this.logger.info("PgVector SQL layer initialized");
   }
 
-  /**
-   * Update existing DocumentChunks with their generated AI Vector Embeddings.
-   */
   public async addDocuments(
     chunks: string[],
     metadata: { documentId: string; title: string }
@@ -43,10 +30,8 @@ export class VectorStoreManager {
     await this.ensureInitialized();
     const embeddings = await this.generateEmbeddings(chunks);
 
-    // Update the matching database chunks with casted pgvector arrays
     try {
       for (let i = 0; i < chunks.length; i++) {
-        // Prepare strict PostgreSQL vector array string format: '[x, y, z]'
         const vectorStr = `[${embeddings[i].join(",")}]`;
         
         await prisma.$executeRawUnsafe(
@@ -63,9 +48,6 @@ export class VectorStoreManager {
     }
   }
 
-  /**
-   * Execute optimized cosine distance similarity search query against the pgvector indexed chunks.
-   */
   public async similaritySearch(
     query: string,
     topK: number = 5,
@@ -78,7 +60,6 @@ export class VectorStoreManager {
     try {
       let results: Array<{ content: string }>;
       
-      // Calculate L2 distance (<->) or Cosine distance (<=>). We use L2 here for standard pgvector indexing.
       if (documentId) {
         results = await prisma.$queryRawUnsafe<{ content: string }[]>(
           `SELECT content FROM "DocumentChunk" WHERE "documentId" = $1 ORDER BY embedding <-> $2::vector LIMIT $3`,
@@ -101,11 +82,7 @@ export class VectorStoreManager {
     }
   }
 
-  /**
-   * Delete operation is natively handled by Prisma Cascade relations
-   */
   public async deleteDocument(documentId: string): Promise<void> {
-     // Intentionally blank: Prisma schema `onDelete: Cascade` handles this upon Document deletion.
      this.logger.info(`Vector lifecycle managed natively by Prisma for document: ${documentId}`);
   }
 

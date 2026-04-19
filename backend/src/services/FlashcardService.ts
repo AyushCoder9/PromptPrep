@@ -5,11 +5,6 @@ import { Logger } from "../utils/logger";
 import { GenerateOptions } from "../interfaces/IContentGenerator";
 import { prisma } from "../repositories/BaseRepository";
 
-/**
- * FlashcardService — Business Logic Layer
- *
- * Fetches context from vector store → uses FlashcardGenerator → stores result.
- */
 export class FlashcardService {
   private flashcardRepo: FlashcardRepository;
   private vectorStore: VectorStoreManager;
@@ -22,16 +17,12 @@ export class FlashcardService {
     this.generator = new FlashcardGenerator();
   }
 
-  /**
-   * Generate flashcards from a document's indexed content.
-   */
   async generateFlashcards(
     documentId: string,
     options?: GenerateOptions
   ): Promise<FlashcardItem[]> {
     this.logger.info(`Generating flashcards for document: ${documentId}`);
 
-    // 1. Retrieve context
     const topic = options?.topic || "key concepts from the study material";
     let contextChunks = await this.vectorStore.similaritySearch(
       `Extract key terms and definitions about ${topic}`,
@@ -39,9 +30,8 @@ export class FlashcardService {
       documentId
     );
 
-    // Fallback: read raw chunks from SQLite if vector search returns empty
     if (contextChunks.length === 0) {
-      this.logger.warn(`Vector search returned empty for ${documentId}, reading chunks from SQLite`);
+      this.logger.warn(`Vector search returned empty, falling back to database chunks`);
       const sqliteChunks = await (prisma as any).documentChunk.findMany({
         where: { documentId },
         orderBy: { chunkIndex: "asc" },
@@ -51,12 +41,10 @@ export class FlashcardService {
     }
 
     if (contextChunks.length === 0) {
-      throw new Error("No content found for this document. Please re-upload.");
+      throw new Error("No content found for this document.");
     }
 
     const context = contextChunks.join("\n\n---\n\n");
-
-    // 2. Generate flashcards
     const flashcards = await this.generator.generate(context, options);
 
     // 3. Store in database

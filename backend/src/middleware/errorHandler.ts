@@ -3,9 +3,6 @@ import { Logger } from "../utils/logger";
 
 const logger = new Logger("ErrorHandler");
 
-/**
- * Custom application error with status code.
- */
 export class AppError extends Error {
   public statusCode: number;
 
@@ -16,10 +13,6 @@ export class AppError extends Error {
   }
 }
 
-/**
- * Global error handling middleware.
- * Catches all errors and returns a consistent JSON response.
- */
 export function errorHandler(
   err: Error | AppError,
   _req: Request,

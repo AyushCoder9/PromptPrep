@@ -2,12 +2,6 @@ import { IDocumentParser } from "../interfaces/IDocumentParser";
 import { PDFParser } from "./PDFParser";
 import { TextParser } from "./TextParser";
 
-/**
- * ParserFactory — Factory Method Pattern
- *
- * Centralizes the creation of document parsers.
- * Returns the correct parser strategy based on the file's MIME type.
- */
 export class ParserFactory {
   private static parsers: IDocumentParser[] = [
     new PDFParser(),

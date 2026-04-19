@@ -1,10 +1,6 @@
 import { BaseRepository } from "./BaseRepository";
 import { Quiz } from "@prisma/client";
 
-/**
- * QuizRepository — Concrete Repository
- * Extends BaseRepository with quiz-specific queries.
- */
 export class QuizRepository extends BaseRepository<Quiz> {
   protected modelName = "quiz";
 

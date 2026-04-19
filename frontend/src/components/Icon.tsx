@@ -1,5 +1,7 @@
+export type IconName = keyof typeof paths;
+
 type IconProps = {
-  name: keyof typeof paths;
+  name: IconName;
   size?: number;
   className?: string;
   "aria-hidden"?: boolean;

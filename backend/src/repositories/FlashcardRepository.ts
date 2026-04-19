@@ -1,10 +1,6 @@
 import { BaseRepository } from "./BaseRepository";
 import { Flashcard } from "@prisma/client";
 
-/**
- * FlashcardRepository — Concrete Repository
- * Extends BaseRepository with flashcard-specific queries.
- */
 export class FlashcardRepository extends BaseRepository<Flashcard> {
   protected modelName = "flashcard";
 
